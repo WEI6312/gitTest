@@ -15,12 +15,13 @@ namespace EMS.tool
         public string create(int id,DateTime? date)
         {
             const string secret = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
-            var token = new JwtBuilder()
-                .WithAlgorithm(new HMACSHA256Algorithm())
-                .WithSecret(secret)
-                .AddClaim("exp", date)
-                .AddClaim("aud", id)
-                .Build();
+            byte[] key = Encoding.UTF8.GetBytes(secret);
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();//加密方式
+            IJsonSerializer serializer = new JsonNetSerializer();//序列化Json
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();//base64加解密
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);//JWT编码
+            var token = encoder.Encode(new Auth { Id = id, ExpiryTime = date }, key);//生成令牌
+
             return token;
         }
     }

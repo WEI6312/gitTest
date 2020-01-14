@@ -20,6 +20,7 @@ namespace EMS.Controllers
         }
 
         [HttpGet]
+        [ApiAuthorize]
         public HttpResponseMessage getUserInfo(int id)
         {
             return userService.getUserInfo(id);

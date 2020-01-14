@@ -15,14 +15,11 @@ namespace EMS.Repository
             .Where(d => (d.Account == account && d.Password == password))
             .ToFirst();
             if (user == null) return null;
-            CreateToken tokenGeneral = new CreateToken();
-            string token = tokenGeneral.create(user.Id, user.ExpiryTime);
-
             user.Attach();
             user.ExpiryTime = DateTime.Now.AddHours(1);
+            CreateToken tokenGeneral = new CreateToken();
+            string token = tokenGeneral.create(user.Id, user.ExpiryTime);
             user.Token = token;
-
-
             DB.Context.Update<User>(user);
             return user;
         }

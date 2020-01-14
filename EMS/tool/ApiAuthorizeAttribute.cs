@@ -27,11 +27,15 @@ namespace EMS.tool
         {
             //前端请求api时会将token存放在名为"auth"的请求头中
             var authHeader = from t in actionContext.Request.Headers where t.Key == "auth" select t.Value.FirstOrDefault();
-            if (authHeader != null)
+            //前端请求api时会将id存放在名为"user"的请求头中
+            var idHeader = from t in actionContext.Request.Headers where t.Key == "user" select t.Value.FirstOrDefault();
+            if (authHeader != null && idHeader != null)
             {
                 const string secret = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";//加密秘钥
                 string token = authHeader.FirstOrDefault();//获取token
-                if (!string.IsNullOrEmpty(token))
+                int id;
+                int.TryParse(idHeader.FirstOrDefault(),out id);//获取token
+                if (!string.IsNullOrEmpty(token)&& id>0)
                 {
                     try
                     {
@@ -42,11 +46,15 @@ namespace EMS.tool
                         IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
                         IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
                         //解密
-                        var json = decoder.DecodeToObject<User>(token, key, verify: true);
+                        var json = decoder.DecodeToObject<Auth>(token, key, verify: true);
                         if (json != null)
                         {
                             //判断口令过期时间
                             if (json.ExpiryTime < DateTime.Now)
+                            {
+                                return false;
+                            }
+                            if (json.Id != id)
                             {
                                 return false;
                             }
